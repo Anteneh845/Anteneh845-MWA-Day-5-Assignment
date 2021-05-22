@@ -17,35 +17,23 @@ const saveReview = (req, res, game) => {
 }
 
 module.exports.addReview = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    }
-    if (req.params.gameId && req.body.name && req.body.review) {
+    if (req.params.gameId && req.body.name && req.body.review)
         Game.findById(req.params.gameId, (err, game) => {
-            if (err) {
-                response.status = 500;
-                response.message = "Internal server error";
-            } else if (game) {
-                saveReview(req, res, game)
+                if (err)
+                    res.status(500).send({message: err})
+                else if (game)
+                    saveReview(req, res, game)
             }
-        });
-    } else {
-        response.status = 400;
-        response.message = "Game ID not specified in URL";
-    }
+        );
+    else
+        res.status(400).json("Game ID not specified in URL");
 }
 
 module.exports.updateReview = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    };
     if (req.params.gameId && req.params.reviewId && req.body.name && req.body.review) {
         Game.findById(req.params.gameId, (err, game) => {
             if (err) {
-                response.status = 500;
-                response.message = "Internal server error";
+                res.status(500).send({message: err})
             } else if (game) {
                 let reviewIndex = game.reviews.findIndex(r => r._id.toString() === req.params.reviewId);
                 if (reviewIndex !== -1) {
@@ -62,24 +50,16 @@ module.exports.updateReview = (req, res) => {
                 }
             }
         })
-    } else {
-        response.status = 400;
-        response.message = "Game ID not specified in URL";
-    }
+    } else
+        res.status(400).json("Game ID not specified in URL");
 }
 
 module.exports.deleteReview = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    };
     if (req.params.gameId && req.params.reviewId) {
         Game.findById(req.params.gameId,
             (err, game) => {
                 if (err) {
-                    response.status = 500;
-                    response.message = "Internal server error";
-                    res.status(response.status).json(response.message);
+                    res.status(500).json({message: err});
                 } else if (game) {
                     const reviewIndex = game.reviews.findIndex(g => g._id.toString() === req.params.reviewId);
                     if (reviewIndex !== -1) {
@@ -94,60 +74,40 @@ module.exports.deleteReview = (req, res) => {
                         game.save((err) => res.status(404).json({message: "Review not found " + err}));
                 }
             })
-    } else {
-        response.status = 400;
-        response.message = "Game ID not specified in URL";
-        res.status(response.status).json(response.message);
-    }
+    } else
+        res.status(400).json("Game ID not specified in URL");
 }
 
 
 module.exports.getReviewList = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    };
     if (req.params.gameId) {
         Game.findById(req.params.gameId, (err, game) => {
-            if (err) {
-                response.status = 500;
-                response.message = "Internal server error";
-            } else if (game) {
-                response.status = 200;
-                response.message = game.reviews;
-            }
-            res.status(response.status).json(response.message);
+            if (err)
+                res.status(500).send({message: err})
+            else if (game)
+                res.status(200).send(game.reviews)
         })
-    } else {
-        response.status = 400;
-        response.message = "Game ID not specified in URL";
-    }
+    } else
+        res.status(400).json("Game ID not specified in URL");
 }
 
+
 module.exports.getReviewById = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    };
     if (req.params.gameId && req.params.reviewId) {
         Game.findById(req.params.gameId, (err, game) => {
-            if (err) {
-                response.status = 500;
-                response.message = "Internal server error";
-            } else if (game) {
-                const review = game.reviews.find(g => g._id.toString() === req.params.reviewId);
-                if (review) {
-                    response.status = 200;
-                    response.message = review;
-                } else {
-                    response.status = 404;
-                    response.message = "Review not found";
+                if (err) {
+                    res.status(500).json({message: err});
+                } else if (!game)
+                    res.status(404).json({message: "Game not found"});
+                else if (game) {
+                    const review = game.reviews.find(g => g._id.toString() === req.params.reviewId);
+                    if (review)
+                        res.status(200).json(review);
+                    else
+                        res.status(404).json({message: "Review not found"});
                 }
             }
-            res.status(response.status).json(response.message);
-        })
-    } else {
-        response.status = 400;
-        response.message = "Game ID not specified in URL";
-    }
+        )
+    } else
+        res.status(400).json("Game ID not specified in URL");
 }

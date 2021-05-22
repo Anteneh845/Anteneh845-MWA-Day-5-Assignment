@@ -15,65 +15,41 @@ const savePublisher = (req, res, game) => {
 }
 
 module.exports.updatePublisher = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    };
-
     if (req.params._id && req.body.name && req.body.country) {
         Game.findById(req.params._id, (err, game) => {
             if (err) {
-                response.status = 500;
-                response.message = "Internal server error";
+                res.status(500).send({message: err})
             } else if (game) {
                 savePublisher(req, res, game)
             }
         })
-    } else {
-        response.status = 400;
-        response.message = "Game ID not specified in URL";
-    }
+    } else
+        res.status(400).json("Game ID not specified in URL");
+
 }
 
 module.exports.deletePublisher = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    };
     if (req.params._id) {
         Game.findById(req.params._id, (err, game) => {
-            if (err) {
-                response.status = 500;
-                response.message = "Internal server error";
-            } else if (game) {
+            if (err)
+                res.status(500).send({message: err})
+            else if (game) {
                 game.publisher = {};
                 game.save((err) => res.status(500).json({message: "Internal server error" + err}));
             }
         })
-    } else {
-        response.status = 400;
-        response.message = "Game ID not specified in URL";
-    }
+    } else
+        res.status(400).json("Game ID not specified in URL");
 }
 
 module.exports.getPublisher = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    };
     if (req.params._id) {
         Game.findById(req.params._id, (err, game) => {
-            if (err) {
-                response.status = 500;
-                response.message = "Internal server error";
-            } else if (game) {
-                response.status = 200;
-                response.message = game.publisher;
-            }
-            res.status(response.status).json(response.message);
+            if (err)
+                res.status(500).json({message: err});
+            else if (game)
+                res.status(200).json(game.publisher);
         })
-    } else {
-        response.status = 400;
-        response.message = "Game ID not specified in URL";
-    }
+    } else
+        res.status(400).json("Game ID not specified in URL");
 }
